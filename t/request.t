@@ -24,7 +24,7 @@ __DATA__
         content_by_lua_block {
             local ffi = require "ffi"
             local headers
-            for i = 1, 300 do
+            for i = 1, 400 do
                 headers = ngx.req.get_headers()
             end
             local keys = {}
