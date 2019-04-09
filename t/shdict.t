@@ -300,8 +300,8 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
                 ngx.say("failed to set: ", err)
                 return
             end
-            ngx.update_time()
             ngx.sleep(0.002)
+            ngx.update_time()
             for i = 1, 30 do
                 val, flags, stale = dogs:get_stale("foo")
             end
@@ -1328,8 +1328,8 @@ not ok: must provide "init" when providing "init_ttl"
             ngx.say("incr: ", res, " ", err)
             ngx.say("foo = ", dogs:get("foo"))
 
-            ngx.update_time()
             ngx.sleep(0.002)
+            ngx.update_time()
 
             ngx.say("foo after incr init_ttl = ", dogs:get("foo"))
         }
@@ -1358,8 +1358,8 @@ foo after incr init_ttl = 10534
             ngx.say("incr: ", res, " ", err)
             ngx.say("foo = ", dogs:get("foo"))
 
-            ngx.update_time()
             ngx.sleep(0.002)
+            ngx.update_time()
 
             ngx.say("foo after init_ttl = ", dogs:get("foo"))
         }
@@ -1388,8 +1388,8 @@ foo after init_ttl = nil
             ngx.say("incr: ", res, " ", err)
             ngx.say("foo = ", dogs:get("foo"))
 
-            ngx.update_time()
             ngx.sleep(0.002)
+            ngx.update_time()
 
             ngx.say("foo after init_ttl = ", dogs:get("foo"))
         }
@@ -1416,15 +1416,15 @@ foo after init_ttl = nil
                 dogs:set("bar" .. i, i, 0.002)
             end
             dogs:set("foo", 32, 0.002)
-            ngx.update_time()
             ngx.sleep(0.003)
+            ngx.update_time()
 
             local res, err = dogs:incr("foo", 10502, 0, 0.001)
             ngx.say("incr: ", res, " ", err)
             ngx.say("foo = ", dogs:get("foo"))
 
-            ngx.update_time()
             ngx.sleep(0.002)
+            ngx.update_time()
 
             ngx.say("foo after init_ttl = ", dogs:get("foo"))
         }
@@ -1465,8 +1465,8 @@ foo after init_ttl = nil
             ngx.say("incr: ", res, " ", err, " ", forcible)
             ngx.say("foo = ", dogs:get(long_prefix .. "foo"))
 
-            ngx.update_time()
             ngx.sleep(0.002)
+            ngx.update_time()
             ngx.say("foo after init_ttl = ", dogs:get("foo"))
         }
     }
