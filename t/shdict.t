@@ -6,9 +6,9 @@ use t::TestCore;
 #master_process_enabled(1);
 #log_level('warn');
 
-repeat_each(2);
+repeat_each(1);
 
-plan tests => repeat_each() * (blocks() * 5 + 2);
+plan tests => repeat_each() * (blocks() * 5);
 
 add_block_preprocessor(sub {
     my $block = shift;
@@ -1348,6 +1348,7 @@ foo after incr init_ttl = 10534
 
 
 === TEST 43: incr key with init and init_ttl (key not exists)
+--- ONLY
 --- config
     location = /t {
         content_by_lua_block {

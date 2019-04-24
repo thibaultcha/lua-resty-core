@@ -8,7 +8,7 @@ use t::TestCore::Stream;
 
 repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 5);
+plan tests => repeat_each() * (blocks() * 5 - 4);
 
 add_block_preprocessor(sub {
     my $block = shift;
@@ -268,7 +268,8 @@ qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
             return
         end
         ngx.update_time()
-        ngx.sleep(0.002)
+        ngx.sleep(0.02)
+        --ngx.update_time()
         for i = 1, 100 do
             val, flags, stale = dogs:get_stale("foo")
         end
@@ -283,7 +284,7 @@ value: bar
 flags: 72
 stale: true
 --- error_log eval
-qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):13 loop\]/
+qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):14 loop\]/
 --- no_error_log
 [error]
  -- NYI:
@@ -667,8 +668,6 @@ flags: nil
 qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):6 loop\]/
 --- no_error_log
 [error]
- -- NYI:
-stitch
 
 
 
@@ -772,8 +771,6 @@ flags: nil
 qr/\[TRACE\s+\d+ content_by_lua\(nginx\.conf:\d+\):7 loop\]/
 --- no_error_log
 [error]
- -- NYI:
-stitch
 
 
 
@@ -1160,7 +1157,8 @@ not ok: must provide "init" when providing "init_ttl"
         ngx.say("foo = ", dogs:get("foo"))
 
         ngx.update_time()
-        ngx.sleep(0.002)
+        ngx.sleep(0.02)
+        --ngx.update_time()
 
         ngx.say("foo after incr init_ttl = ", dogs:get("foo"))
     }
@@ -1180,15 +1178,26 @@ foo after incr init_ttl = 10534
     content_by_lua_block {
         local dogs = ngx.shared.dogs
         dogs:flush_all()
+        local at_incr = ngx.now()
 
         local res, err = dogs:incr("foo", 10502, 1, 0.001)
         ngx.say("incr: ", res, " ", err)
         ngx.say("foo = ", dogs:get("foo"))
 
         ngx.update_time()
-        ngx.sleep(0.002)
+        local at_sleep = ngx.now()
+        ngx.sleep(0.02)
+        --ngx.update_time()
 
-        ngx.say("foo after init_ttl = ", dogs:get("foo"))
+        local at_get = ngx.now()
+        local val = dogs:get("foo")
+        ngx.say("foo after init_ttl = ", val)
+        if val then
+            ngx.say("before incr: ", at_incr)
+            ngx.say("before sleep: ", at_sleep)
+            ngx.say("before get: ", at_get)
+            ngx.say("ttl of foo: ", dogs:ttl("foo"))
+        end
     }
 --- stream_response
 incr: 10503 nil
@@ -1207,14 +1216,27 @@ foo after init_ttl = nil
         local dogs = ngx.shared.dogs
         dogs:flush_all()
 
+        local at_incr = ngx.now()
+
         local res, err = dogs:incr("foo", 10502, 1, "0.001")
         ngx.say("incr: ", res, " ", err)
         ngx.say("foo = ", dogs:get("foo"))
 
         ngx.update_time()
-        ngx.sleep(0.002)
 
-        ngx.say("foo after init_ttl = ", dogs:get("foo"))
+        local at_sleep = ngx.now()
+        ngx.sleep(0.02)
+        --ngx.update_time()
+
+        local at_get = ngx.now()
+        local val = dogs:get("foo")
+        ngx.say("foo after init_ttl = ", val)
+        if val then
+            ngx.say("before incr: ", at_incr)
+            ngx.say("before sleep: ", at_sleep)
+            ngx.say("before get: ", at_get)
+            ngx.say("ttl of foo: ", dogs:ttl("foo"))
+        end
     }
 --- stream_response
 incr: 10503 nil
@@ -1236,16 +1258,28 @@ foo after init_ttl = nil
         end
         dogs:set("foo", 32, 0.002)
         ngx.update_time()
-        ngx.sleep(0.003)
+        ngx.sleep(0.03)
+        --ngx.update_time()
 
+        local at_incr = ngx.now()
         local res, err = dogs:incr("foo", 10502, 0, 0.001)
         ngx.say("incr: ", res, " ", err)
         ngx.say("foo = ", dogs:get("foo"))
 
         ngx.update_time()
-        ngx.sleep(0.002)
+        local at_sleep = ngx.now()
+        ngx.sleep(0.02)
+        --ngx.update_time()
 
-        ngx.say("foo after init_ttl = ", dogs:get("foo"))
+        local at_get = ngx.now()
+        local val = dogs:get("foo")
+        ngx.say("foo after init_ttl = ", val)
+        if val then
+            ngx.say("before incr: ", at_incr)
+            ngx.say("before sleep: ", at_sleep)
+            ngx.say("before get: ", at_get)
+            ngx.say("ttl of foo: ", dogs:ttl("foo"))
+        end
     }
 --- stream_response
 incr: 10502 nil
@@ -1276,13 +1310,25 @@ foo after init_ttl = nil
         local res, err, forcible = dogs:incr(long_prefix .. "bar", 10502, 0)
         ngx.say("incr: ", res, " ", err, " ", forcible)
 
+        local at_incr = ngx.now()
+
         local res, err, forcible = dogs:incr(long_prefix .. "foo", 10502, 0, 0.001)
         ngx.say("incr: ", res, " ", err, " ", forcible)
         ngx.say("foo = ", dogs:get(long_prefix .. "foo"))
 
         ngx.update_time()
-        ngx.sleep(0.002)
-        ngx.say("foo after init_ttl = ", dogs:get("foo"))
+        local at_sleep = ngx.now()
+        ngx.sleep(0.02)
+        --ngx.update_time()
+        local at_get = ngx.now()
+        local val = dogs:get("foo")
+        ngx.say("foo after init_ttl = ", val)
+        if val then
+            ngx.say("before incr: ", at_incr)
+            ngx.say("before sleep: ", at_sleep)
+            ngx.say("before get: ", at_get)
+            ngx.say("ttl of foo: ", dogs:ttl("foo"))
+        end
     }
 --- stream_response
 incr: 10502 nil false
